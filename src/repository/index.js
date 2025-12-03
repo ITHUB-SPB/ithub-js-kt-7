@@ -6,6 +6,6 @@ export default {
     create: () => { },
     update: () => { },
     upsert: () => { },
-    delete: () => { },
+    delete: () => { }, //w
     groupBy: () => { },
 }
