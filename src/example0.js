@@ -1,32 +1,47 @@
+class SlotValueError extends TypeError {
+  constructor(message) {
+    super(`Value must be a Timeslot ${message ? message : ""}`);
+  }
+}
+
+class SlotRelationError extends RangeError {
+  constructor(start, end) {
+    const localeStart = start.toLocaleString("ru");
+    const localeEnd = end.toLocaleString("ru");
+
+    super(
+      `Value of start (${localeStart}) must be less than end (${localeEnd})`
+    );
+  }
+}
+
 class Timeslot {
   #start;
+  #end;
 
   constructor(start, end) {
-    if ([start, end].some((value) => !this.#isDate(value))) {
-      throw new Error("Values must be instance of Date");
-    }
-
-    if (start >= end) {
-      throw new Error("Value of end must be greater than end");
-    }
-
-    this.#start = start;
-    this._end = end;
+    this.setStart(start);
+    this.setEnd(end);
   }
 
   #isDate(value) {
     return value instanceof Date;
   }
 
-  isIntersect(otherTimeslot) {
-    // TODO go static
+  static isIntersect(timeslot, otherTimeslot) {
+    if (!(timeslot instanceof Timeslot)) {
+      throw new SlotValueError(timeslot.toString());
+    }
+
     if (!(otherTimeslot instanceof Timeslot)) {
-      throw new Error("Value must be a Timeslot");
+      throw new SlotValueError(otherTimeslot.toString());
     }
 
     return (
-      otherTimeslot.#start >= this.#start ||
-      (otherTimeslot.#start < this.#start && otherTimeslot._end > this.#start)
+      (otherTimeslot.start > timeslot.start &&
+        otherTimeslot.end < timeslot.end) ||
+      (otherTimeslot.start < timeslot.start &&
+        otherTimeslot.end > timeslot.start)
     );
   }
 
@@ -34,36 +49,44 @@ class Timeslot {
     return this.#start;
   }
 
+  get start() {
+    return this.#start;
+  }
+
   getEnd() {
-    return this._end;
+    return this.#end;
   }
 
   get end() {
-    return this._end; // либо this.getEnd()
+    return this.#end; // либо this.getEnd()
   }
 
   setStart(newDate) {
     if (!this.#isDate(newDate)) {
-      throw new Error("Value must be a Time");
+      throw new TypeError("Value must be a Time");
     }
 
-    if (newDate >= this._end) {
-      throw new Error("Value of start must be less than end");
+    if (this.#end && newDate >= this.#end) {
+      throw new SlotRelationError(newDate, this.#end);
     }
 
     this.#start = newDate;
   }
 
+  set start(newDate) {
+    return this.setStart(newDate);
+  }
+
   setEnd(newDate) {
     if (!this.#isDate(newDate)) {
-      throw new Error("Value must be a Time");
+      throw new TypeError("Value must be a Time");
     }
 
     if (newDate <= this.#start) {
-      throw new Error("Value of end must be greater than end");
+      throw new SlotRelationError(this.#start, newDate);
     }
 
-    this._end = newDate;
+    this.#end = newDate;
   }
 
   set end(newDate) {
@@ -80,7 +103,7 @@ class Timeslot {
   toString() {
     return {
       start: this.#start.toLocaleString("ru"),
-      end: this._end.toLocaleString("ru"),
+      end: this.#end.toLocaleString("ru"),
     };
   }
 
@@ -89,45 +112,31 @@ class Timeslot {
   }
 
   static fromJSON(data) {
-    const { start, end } = JSON.parse(data);
-    // TODO go static
+    return this.fromMapped(JSON.parse(data));
+  }
+
+  static fromMapped(data) {
+    const { start, end } = data;
     return new this(new Date(start * 1000), new Date(end * 1000));
   }
 }
 
 const slot1 = new Timeslot(
-  new Date(2025, 11, 1, 10),
-  new Date(2025, 11, 1, 13)
-);
-const slot2 = new Timeslot(
-  new Date(2025, 11, 1, 11),
+  new Date(2025, 11, 1, 11, 30),
   new Date(2025, 11, 1, 12)
 );
 
+const slot2 = new Timeslot(
+  new Date(2025, 11, 1, 11, 40),
+  new Date(2025, 11, 1, 15)
+);
+
+console.log(Timeslot.isIntersect(slot1, slot2));
+
 const slot3json = '{ "start": 1220220000, "end": 10000200500 }';
-
-// console.log(slot1.end, slot1.getEnd());
-// slot1.end = new Date();
-// slot1.setEnd(new Date());
-// console.log(slot1.end, slot1.getEnd());
-
-// const slot3 = new Timeslot(new Date(2020, 1, 1), new Date(2020, 1, 2));
 const slot3 = Timeslot.fromJSON(slot3json);
-// slot3.fromJSON(slot3json);
 console.log(slot3.toString());
 
-// TODO рассказать про наследование на примере Error
-// создать свои кастомные классы ошибок
-
-// console.log(slot1.getStart());
-// slot1.setStart(new Date(2025, 10, 1, 11));
-// console.log(slot1.getStart());
-
-// TODO (кт) перевести _end в приватный (защищенный) вид
-
-// !!! след. занятие начать со статических методов
-// slot3.fromJSON(slot3json)
-
-// console.log(slot1.toMapped())
-// console.log(slot1.toString())
-// console.log(slot1.toJSON())
+const slot4object = { start: 1220220000, end: 10000200500 };
+const slot4 = Timeslot.fromMapped(slot4object);
+console.log(slot4.toString());
