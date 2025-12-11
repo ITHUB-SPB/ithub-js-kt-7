@@ -1,7 +1,7 @@
 {
   "type": "module",
   "scripts": {
-    "dev": "node --watch src/sandbox.js",
+    "dev": "node --watch src/main.js",
     "format": "prettier src/task*.js --write",
     "test": "vitest watch --reporter=dot",
     "test:report": "vitest run",
