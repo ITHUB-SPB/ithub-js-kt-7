@@ -6,31 +6,27 @@ export class RequestParser {
     #body;
 
     constructor(request) {
-        const path = request.url
-        this.#method = request.method
-        this.#url = this.#parseUrl(path)
-        this.#parseBody(request)
-        this.#params = this.#parseParams(path)
+        const path = request.url;
+        this.#method = request.method;
+        this.#url = this.#parseUrl(path);
+        this.#parseBody(request);
+        this.#params = this.#parseParams(path);
     }
 
-    #parseParams(path) {
+    #parseParams(path) {}
 
-    }
-
-    #parseUrl(path) {
-
-    }
+    #parseUrl(path) {}
 
     #parseBody(request) {
-        let payload = ''
+        let payload = "";
 
-        request.on("data", chunk => {
-            payload += chunk.toString()
-        })
+        request.on("data", (chunk) => {
+            payload += chunk.toString();
+        });
 
         request.on("end", () => {
-            this.#body = payload
-        })
+            this.#body = payload;
+        });
     }
 
     toObject() {
@@ -38,7 +34,7 @@ export class RequestParser {
             url: this.#url,
             method: this.#method,
             params: this.#params,
-            payload: this.#body
-        }
+            payload: this.#body,
+        };
     }
 }

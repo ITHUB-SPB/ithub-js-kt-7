@@ -1,26 +1,37 @@
-import { createServer } from 'node:http'
-import Router from './router.js'
-import { RequestParser } from './requestParser.js'
-import { BookingController } from './controller.js'
+import { createServer } from "node:http";
+import Router from "./router.js";
+import { RequestParser } from "./requestParser.js";
+import { BookingController } from "./controller.js";
 
-const router = new Router()
+const router = new Router();
 
-router.register({ method: "GET", path: "/bookings" }, BookingController.findAll)
-router.register({ method: "POST", path: "/bookings" }, BookingController.create)
+router.register(
+    { method: "GET", path: "/bookings" },
+    BookingController.findAll
+);
+router.register(
+    { method: "POST", path: "/bookings" },
+    BookingController.create
+);
 
 const server = createServer((request, response) => {
     const headers = {
-        "Content-Type": "application/json"
-    }
+        "Content-Type": "application/json",
+    };
 
-    const { method, url, params, payload } = new RequestParser(request).toObject()
+    const { method, url, params, payload } = new RequestParser(
+        request
+    ).toObject();
 
-    const { statusCode, data } = router.handle({ method, url })({ params, payload })
+    const { statusCode, data } = router.handle({ method, url })({
+        params,
+        payload,
+    });
 
-    response.writeHead(statusCode, undefined, headers)
-    response.end(JSON.stringify(data))
-})
+    response.writeHead(statusCode, undefined, headers);
+    response.end(JSON.stringify(data));
+});
 
 server.listen(3000, () => {
-    console.log(`API server listening: http://localhost:3000`)
-})
+    console.log(`API server listening: http://localhost:3000`);
+});
