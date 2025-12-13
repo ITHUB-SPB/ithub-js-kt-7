@@ -1,5 +1,6 @@
 import { createServer } from 'node:http'
 import Router from './router.js'
+import { RequestParser } from './requestParser.js'
 import { BookingController } from './controller.js'
 
 const router = new Router()
@@ -12,29 +13,12 @@ const server = createServer((request, response) => {
         "Content-Type": "application/json"
     }
 
-    const method = request.method
-    const path = request.url
+    const { method, url, params, payload } = new RequestParser(request).toObject()
 
-    if (method === 'GET' || method === 'DELETE') {
-        const { statusCode, data } = router.handle({ method, path })()
+    const { statusCode, data } = router.handle({ method, url })({ params, payload })
 
-        response.writeHead(statusCode, undefined, headers)
-        response.end(JSON.stringify(data))
-        return
-    }
-
-    let payload = ''
-
-    request.on("data", chunk => {
-        payload += chunk.toString()
-    })
-
-    request.on("end", () => {
-        console.log('payload', payload)
-        const { statusCode, data } = router.handle({ method, path })(payload)
-        response.writeHead(statusCode, undefined, headers)
-        response.end(JSON.stringify(data))
-    })
+    response.writeHead(statusCode, undefined, headers)
+    response.end(JSON.stringify(data))
 })
 
 server.listen(3000, () => {
