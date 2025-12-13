@@ -9,15 +9,13 @@ router.register({ method: "GET", path: "/bookings" }, BookingController.findAll)
 router.register({ method: "POST", path: "/bookings" }, BookingController.create)
 
 const server = createServer((request, response) => {
-    const headers = {
-        "Content-Type": "application/json"
-    }
-
     const { method, url, params, payload } = new RequestParser(request).toObject()
-
     const { statusCode, data } = router.handle({ method, url })({ params, payload })
 
-    response.writeHead(statusCode, undefined, headers)
+    response.writeHead(statusCode, undefined, {
+        "Content-Type": "application/json"
+    })
+
     response.end(JSON.stringify(data))
 })
 

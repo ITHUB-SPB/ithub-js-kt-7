@@ -1,27 +1,51 @@
-// requestParser
 export class RequestParser {
-    #url;
+    #resource;
     #method;
     #params;
     #body;
 
     constructor(request) {
-        const path = request.url
+        const urlObject = new URL(request.url, 'http://localhost:3000')
         this.#method = request.method
-        this.#url = this.#parseUrl(path)
+        this.#resource = this.#parseResource(urlObject)
         this.#parseBody(request)
-        this.#params = this.#parseParams(path)
+        this.#params = this.#parseParams(urlObject)
     }
 
-    #parseParams(path) {
+    #parseParams(urlObject) {
+        // разобрать и вернуть согласно примеру ниже
+        // 1. параметры пути на основе urlObject.pathname (0.5 балла)
+        // 2. поисковые параметры на основе urlObject.searchParams (по 0.5 за каждый из четырех)
+        // 
+        // бонус (1 балл): настройки пагинации выдавать в цельном объекте paginate
+        // бонус (1 балл): добавить валидацию на основе valibot-схемы (добавить в schema.js)
 
+        return {
+            pathParams: { id: 1 }, // или же null, если их нет
+            queryParams: {
+                filter: 'end.eq.1000000', // или же null, если его нет,
+                sort: 'start.asc', // или же null, если его нет,
+                limit: 10, // или же null, если его нет,
+                offset: 0 // или же null, если его нет,
+            } //
+        }
     }
 
-    #parseUrl(path) {
-
+    #parseResource(urlObject) {
+        // возвращать ресурс (0.5 балла)
+        // (из адреса http://localhost:3000/bookings возвращать /bookings)
+        // (из адреса http://localhost:3000/bookings/1 возвращать /bookings)
+        // (из адреса http://localhost:3000/bookings?sort=start.desc возвращать /bookings)
+        return
     }
 
     #parseBody(request) {
+        // базовое задание (2 балла):
+        // проверить, успевает ли считаться тело перед тем, как мы вернем ответ
+        // если нет, вспомнить промисы и сделать соответствующий then,
+        // либо (если промисы сложны) встроить ожидание в коллбэк
+        // бонус (2 балла): за промисификацию request.on('data') и request.on('end')
+
         let payload = ''
 
         request.on("data", chunk => {
@@ -35,7 +59,7 @@ export class RequestParser {
 
     toObject() {
         return {
-            url: this.#url,
+            resource: this.#resource,
             method: this.#method,
             params: this.#params,
             payload: this.#body
