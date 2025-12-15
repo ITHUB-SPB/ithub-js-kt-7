@@ -20,15 +20,24 @@ export class RequestParser {
         // бонус (1 балл): настройки пагинации выдавать в цельном объекте paginate
         // бонус (1 балл): добавить валидацию на основе valibot-схемы (добавить в schema.js)
 
-        return {
-            pathParams: { id: 1 }, // или же null, если их нет
-            queryParams: {
-                filter: 'end.eq.1000000', // или же null, если его нет,
-                sort: 'start.asc', // или же null, если его нет,
-                limit: 10, // или же null, если его нет,
-                offset: 0 // или же null, если его нет,
-            } //
+        const pathname = urlObject.pathname
+        const LastSlashIndex = pathname.lastIndexOf('/')
+
+        return{
+            pathPaeams: LastSlashIndex === 0 ? null :{
+                id: Number(pathname.slice(LastSlashIndex + 1))
+            }
         }
+
+        // return {
+        //     pathParams: { id: 1 }, // или же null, если их нет
+        //     queryParams: {
+        //         filter: 'end.eq.1000000', // или же null, если его нет,
+        //         sort: 'start.asc', // или же null, если его нет,
+        //         limit: 10, // или же null, если его нет,
+        //         offset: 0 // или же null, если его нет,
+        //     } //
+        
     }
 
     #parseResource(urlObject) {
@@ -36,7 +45,11 @@ export class RequestParser {
         // (из адреса http://localhost:3000/bookings возвращать /bookings)
         // (из адреса http://localhost:3000/bookings/1 возвращать /bookings)
         // (из адреса http://localhost:3000/bookings?sort=start.desc возвращать /bookings)
-        return
+        const pathname = urlObject.pathname
+        const LastSlashIndex = pathname.lastIndexOf('/')
+
+        return LastSlashIndex === 0 ? pathname : pathname.substring(0, LastSlashIndex)
+        
     }
 
     #parseBody(request) {

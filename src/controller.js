@@ -2,7 +2,7 @@ import * as v from 'valibot'
 
 import Timeslot from './timeslot.js'
 import { bookings } from './data-provider.js'
-import { newBookingInSchema, newBookingOutSchema } from './schema.js'
+import { newBookingInSchema, newBookingOutSchema, bookingDeleteSchema } from './schema.js'
 
 export class BookingController {
     static findAll() {
@@ -48,6 +48,41 @@ export class BookingController {
                 data: {
                     error: error.message || '',
                 },
+            }
+        }
+    }
+
+    static delete(options) {  
+        
+        try{
+            v.parse(bookingDeleteSchema, options)
+        }catch(error){
+            console.error(error)
+            return{
+                statusCode: 400,
+                data: {
+                    error: error.massage || '',
+                }
+            }
+
+        }
+        
+        const idToDelete = options.params.pathParams.id
+        const IndexToDelete = bookings.findIndex(booking => booking.id === idToDelete)
+        if (IndexToDelete === -1) {
+            return {
+                statusCode: 400,
+                data: {
+                    Error: 'Record with id ${idToDelete} not found'
+            }
+        }
+    }
+            bookings.splice(IndexToDelete, 1)
+
+            return {
+                statusCode: 204,
+                data: {
+                    massage: 'Record with id ${idToDelete} successfully removed'
             }
         }
     }
