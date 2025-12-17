@@ -5,11 +5,16 @@ import { bookings } from './data-provider.js'
 import { newBookingInSchema, newBookingOutSchema, bookingDeleteSchema } from './schema.js'
 
 export class BookingController {
-    static findAll() {
+    static findAll({params}) {
+        const { queryParams } = params
+        //работаем с фильтрацией (методом filter)
+        //сортировкой (методами sort либо toSorted)
+        //пагинацией (метод slice)
+
         const bookingObjects = bookings.map((bookingMap) =>
             Timeslot.fromMapped(bookingMap),
         )
-
+//корректно распознать параметры
         return {
             statusCode: 200,
             data: {

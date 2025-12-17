@@ -24,10 +24,16 @@ export class RequestParser {
         const pathname = urlObject.pathname
         const lastSlashIndex = pathname.lastIndexOf('/')
 
+        const queryParams = {}
+        //перебираем через for ..of urlObject.searchParams
+        //и записываем найденные параметры в объект queryParams
+
         return {
             pathParams: lastSlashIndex === 0 ? null : {
                 id: Number(pathname.slice(lastSlashIndex + 1))
-            }
+            },
+            queryParams: 
+                Object.entries(queryParams).length > 0 ? queryParams : null,
         }
 
         // return {
@@ -69,6 +75,8 @@ export class RequestParser {
             this.#body = payload
         })
     }
+
+// дождись пока реквест завершится
 
     toObject() {
         return {
