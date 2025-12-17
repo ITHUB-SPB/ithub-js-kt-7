@@ -33,16 +33,42 @@ export class RequestParser {
                 ? { id: Number(pathname.slice(lastSlashIndex + 1)) }
                 : null
 
-        const queryParamsRaw = {
-            filter: urlObject.searchParams.get('filter'),
-            sort: urlObject.searchParams.get('sort'),
-            limit: urlObject.searchParams.get('limit')
-                ? Number(urlObject.searchParams.get('limit'))
-                : null,
-            offset: urlObject.searchParams.get('offset')
-                ? Number(urlObject.searchParams.get('offset'))
-                : null,
-        }
+        // const queryParamsRaw = {
+        //     filter: urlObject.searchParams.get('filter'),
+        //     sort: urlObject.searchParams.get('sort'),
+        //     limit: urlObject.searchParams.get('limit')
+        //         ? Number(urlObject.searchParams.get('limit'))
+        //         : null,
+        //     offset: urlObject.searchParams.get('offset')
+        //         ? Number(urlObject.searchParams.get('offset'))
+        //         : null,
+        // }
+
+        const queryParamsRaw = ['filter', 'sort', 'limit', 'offset'].reduce((acc, key) => {
+            const value = urlObject.searchParams.get(key)
+            
+            if (value !== null) {
+                acc[key] = (key === 'limit' || key === 'offset') ? Number(value) : value
+            }
+
+            return acc
+        }, {})
+
+        // const queryParamsRaw = {}
+
+        // const filter = urlObject.searchParams.get('filter')
+        // if (filter !== null) queryParamsRaw.filter = filter
+
+        // const sort = urlObject.searchParams.get('sort')
+        // if (sort !== null) queryParamsRaw.sort = sort
+
+        // const limit = urlObject.searchParams.get('limit')
+        // if (limit !== null) queryParamsRaw.limit = Number(limit)
+
+        // const offset = urlObject.searchParams.get('offset')
+        // if (offset !== null) queryParamsRaw.offset = Number(offset)
+
+        console.log(queryParamsRaw)
 
         let queryParams = null
         let paginate = null
@@ -64,6 +90,8 @@ export class RequestParser {
         } catch (error) {
             // TODO: чет вписать в кэтч при парсинге параметров
         }
+
+        console.log(queryParams)
 
         return {
             pathParams,

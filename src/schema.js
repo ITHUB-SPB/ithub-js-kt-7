@@ -42,7 +42,11 @@ export const bookingsQuerySchema = v.object({
     filter: v.optional(v.string()),
     sort: v.optional(v.string()),
     limit: v.optional(
-        v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(50)),
+        v.nullable(
+            v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(50)),
+        ),
     ),
-    offset: v.optional(v.pipe(v.number(), v.integer(), v.minValue(0))),
+    offset: v.optional(
+        v.nullable(v.pipe(v.number(), v.integer(), v.minValue(0))),
+    ),
 })
