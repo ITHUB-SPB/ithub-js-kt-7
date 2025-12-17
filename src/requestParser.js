@@ -3,13 +3,14 @@ export class RequestParser {
     #method;
     #params;
     #body;
+    #bodyPromise;
 
     constructor(request) {
-        const urlObject = new URL(request.url, 'http://localhost:3000')
-        this.#method = request.method
-        this.#resource = this.#parseResource(urlObject)
-        this.#parseBody(request)
-        this.#params = this.#parseParams(urlObject)
+        const urlObject = new URL(request.url, 'http://localhost:3000');
+        this.#method = request.method;
+        this.#resource = this.#parseResource(urlObject);
+        this.#params = this.#parseParams(urlObject);
+        this.#bodyPromise = this.#parseBody(request);
     }
 
     #parseParams(urlObject) {
@@ -39,6 +40,66 @@ export class RequestParser {
         //     } //
         
     }
+// //Первоя част кт
+
+//      #parseParams(urlObject) {
+//         // Парсинг path parameters
+//         const pathname = urlObject.pathname;
+//         const pathSegments = pathname.split('/').filter(segment => segment !== '');
+        
+//         let pathParams = null;
+        
+//         // Если последний сегмент - число, считаем его ID
+//         if (pathSegments.length > 0) {
+//             const lastSegment = pathSegments[pathSegments.length - 1];
+//             const id = Number(lastSegment);
+//             if (!isNaN(id) && lastSegment === id.toString()) {
+//                 pathParams = { id: id };
+//             }
+//         }
+
+//         // Парсинг query parameters
+//         const searchParams = urlObject.searchParams;
+        
+//         // Получаем значения
+//         const filter = searchParams.get('filter');
+//         const sort = searchParams.get('sort');
+//         const limit = searchParams.get('limit');
+//         const offset = searchParams.get('offset');
+        
+//         let queryParams = null;
+//         let paginate = null;
+        
+//         // Создаем объект queryParams если есть хотя бы один параметр
+//         if (filter || sort || limit || offset) {
+//             queryParams = {
+//                 filter: filter || null,
+//                 sort: sort || null,
+//                 limit: limit ? Number(limit) : null,
+//                 offset: offset ? Number(offset) : null
+//             };
+            
+//             // Бонус: создаем объект paginate если есть limit или offset
+//             if (limit || offset) {
+//                 paginate = {};
+//                 if (limit) paginate.limit = Number(limit);
+//                 if (offset) paginate.offset = Number(offset);
+//             }
+//         }
+
+//         const result = { pathParams };
+        
+//         if (queryParams) {
+//             result.queryParams = queryParams;
+//         }
+        
+//         if (paginate) {
+//             result.paginate = paginate;
+//         }
+        
+//         return result;
+// }
+// //Первоя част кт
 
     #parseResource(urlObject) {
         // возвращать ресурс (0.5 балла)
@@ -51,7 +112,23 @@ export class RequestParser {
         return LastSlashIndex === 0 ? pathname : pathname.substring(0, LastSlashIndex)
         
     }
-
+// //Первоя част кт
+//     #parseResource(urlObject) {
+//         const pathname = urlObject.pathname;
+//         const pathSegments = pathname.split('/').filter(segment => segment !== '');
+        
+//         // Если последний сегмент - число (ID), удаляем его
+//         if (pathSegments.length > 0) {
+//             const lastSegment = pathSegments[pathSegments.length - 1];
+//             const id = Number(lastSegment);
+//             if (!isNaN(id) && lastSegment === id.toString()) {
+//                 pathSegments.pop();
+//             }
+//         }
+        
+//         return pathSegments.length > 0 ? `/${pathSegments.join('/')}` : '/';
+//     }
+// //Первоя част кт
     #parseBody(request) {
         // базовое задание (2 балла):
         // проверить, успевает ли считаться тело перед тем, как мы вернем ответ
@@ -69,6 +146,46 @@ export class RequestParser {
             this.#body = payload
         })
     }
+
+// //Первоя часть кт
+//      #parseBody(request) {
+//         return new Promise((resolve) => {
+//             if (this.#method === 'GET' || this.#method === 'HEAD') {
+//                 this.#body = null;
+//                 resolve();
+//                 return;
+//             }
+
+//             let payload = '';
+            
+//             request.on("data", chunk => {
+//                 payload += chunk.toString();
+//             });
+
+//             request.on("end", () => {
+//                 try {
+//                     if (payload) {
+//                         try {
+//                             this.#body = JSON.parse(payload);
+//                         } catch {
+//                             this.#body = payload;
+//                         }
+//                     } else {
+//                         this.#body = null;
+//                     }
+//                 } catch (error) {
+//                     this.#body = null;
+//                 }
+//                 resolve();
+//             });
+
+//             request.on("error", () => {
+//                 this.#body = null;
+//                 resolve();
+//             });
+//         });
+//     }
+// //первая часть кт
 
     toObject() {
         return {
