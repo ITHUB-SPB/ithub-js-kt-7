@@ -1,15 +1,19 @@
+import * as v from 'valibot'
+import { bookingsQuerySchema } from './schema.js'
+
 export class RequestParser {
-    #resource;
-    #method;
-    #params;
-    #body;
+    #resource
+    #method
+    #params
+    #body
+    #bodyPromise
 
     constructor(request) {
         const urlObject = new URL(request.url, 'http://localhost:3000')
         this.#method = request.method
         this.#resource = this.#parseResource(urlObject)
-        // this.#parseBody(request)
         this.#params = this.#parseParams(urlObject)
+        this.#bodyPromise = this.#parseBody(request)
         console.log(this.#method, this.#resource, this.#params)
     }
 
@@ -17,28 +21,55 @@ export class RequestParser {
         // разобрать и вернуть согласно примеру ниже
         // 1. параметры пути на основе urlObject.pathname (0.5 балла)
         // 2. поисковые параметры на основе urlObject.searchParams (по 0.5 за каждый из четырех)
-        // 
+        //
         // бонус (1 балл): настройки пагинации выдавать в цельном объекте paginate
         // бонус (1 балл): добавить валидацию на основе valibot-схемы (добавить в schema.js)
 
         const pathname = urlObject.pathname
         const lastSlashIndex = pathname.lastIndexOf('/')
 
-        return {
-            pathParams: lastSlashIndex === 0 ? null : {
-                id: Number(pathname.slice(lastSlashIndex + 1))
-            }
+        const pathParams =
+            lastSlashIndex > 0
+                ? { id: Number(pathname.slice(lastSlashIndex + 1)) }
+                : null
+
+        const queryParamsRaw = {
+            filter: urlObject.searchParams.get('filter'),
+            sort: urlObject.searchParams.get('sort'),
+            limit: urlObject.searchParams.get('limit')
+                ? Number(urlObject.searchParams.get('limit'))
+                : null,
+            offset: urlObject.searchParams.get('offset')
+                ? Number(urlObject.searchParams.get('offset'))
+                : null,
         }
 
-        // return {
-        //     pathParams: { id: 1 }, // или же null, если их нет
-        //     queryParams: {
-        //         filter: 'end.eq.1000000', // или же null, если его нет,
-        //         sort: 'start.asc', // или же null, если его нет,
-        //         limit: 10, // или же null, если его нет,
-        //         offset: 0 // или же null, если его нет,
-        //     } //
-        // }
+        let queryParams = null
+        let paginate = null
+
+        try {
+            const parsed = v.parse(bookingsQuerySchema, queryParamsRaw)
+
+            queryParams = {
+                filter: parsed.filter ?? null,
+                sort: parsed.sort ?? null,
+            }
+
+            if (parsed.limit !== undefined || parsed.offset !== undefined) {
+                paginate = {
+                    limit: parsed.limit ?? null,
+                    offset: parsed.offset ?? null,
+                }
+            }
+        } catch (error) {
+            // TODO: чет вписать в кэтч при парсинге параметров
+        }
+
+        return {
+            pathParams,
+            queryParams,
+            paginate,
+        }
     }
 
     #parseResource(urlObject) {
@@ -49,7 +80,9 @@ export class RequestParser {
         const pathname = urlObject.pathname
         const lastSlashIndex = pathname.lastIndexOf('/')
 
-        return lastSlashIndex === 0 ? pathname : pathname.substring(0, lastSlashIndex)
+        return lastSlashIndex === 0
+            ? pathname
+            : pathname.substring(0, lastSlashIndex)
     }
 
     #parseBody(request) {
@@ -59,23 +92,25 @@ export class RequestParser {
         // либо (если промисы сложны) встроить ожидание в коллбэк
         // бонус (2 балла): за промисификацию request.on('data') и request.on('end')
 
-        let payload = ''
+        return new Promise((resolve) => {
+            let payload = ''
 
-        request.on("data", chunk => {
-            payload += chunk.toString()
-        })
+            request.on('data', (chunk) => {
+                payload += chunk.toString()
+            })
 
-        request.on("end", () => {
-            this.#body = payload
+            request.on('end', () => {
+                resolve(payload || null)
+            })
         })
     }
 
     toObject() {
-        return {
+        return this.#bodyPromise.then((payload) => ({
             resource: this.#resource,
             method: this.#method,
             params: this.#params,
-            payload: this.#body
-        }
+            payload,
+        }))
     }
 }

@@ -25,12 +25,24 @@ export const newBookingOutSchema = v.object({
 
 export const bookingDeleteSchema = v.object({
     params: v.strictObject({
-        pathParams: v.strictObject({
-            id: v.pipe(
-                v.number('Invalid id format: id must be numeric'),
-                v.integer('Invalid id format: id must be integer'),
-                v.minValue(1, 'Invalid id format: id must be positive'),
-            )
-        }, "Id for record to delete must be set")
-    })
+        pathParams: v.strictObject(
+            {
+                id: v.pipe(
+                    v.number('Invalid id format: id must be numeric'),
+                    v.integer('Invalid id format: id must be integer'),
+                    v.minValue(1, 'Invalid id format: id must be positive'),
+                ),
+            },
+            'Id for record to delete must be set',
+        ),
+    }),
+})
+
+export const bookingsQuerySchema = v.object({
+    filter: v.optional(v.string()),
+    sort: v.optional(v.string()),
+    limit: v.optional(
+        v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(50)),
+    ),
+    offset: v.optional(v.pipe(v.number(), v.integer(), v.minValue(0))),
 })
