@@ -96,7 +96,7 @@ export default class Timeslot {
     toMapped() {
         return {
             start: this.#start / 1000,
-            end: this.#start / 1000,
+            end: this.#end / 1000,
         };
     }
 
